@@ -1,0 +1,74 @@
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  labels:
+    app: "worker"
+spec:
+  nodeSelector:
+    pooltype: 6x12
+  tolerations:
+  - key: "worker"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  containers:
+  - args:
+    - "cat"
+    command:
+    - "/bin/sh"
+    - "-c"
+    image: "clearbanc/compose-custom:120f3f510"
+    imagePullPolicy: "IfNotPresent"
+    name: "compose"
+    resources:
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+        ephemeral-storage: "64Gi"
+      requests:
+        memory: "4Gi"
+        cpu: "2000m"
+        ephemeral-storage: "64Gi"
+    env:
+    - name: COMPOSE_CPU_REQUEST
+      valueFrom:
+        resourceFieldRef:
+          containerName: compose
+          resource: requests.cpu
+    securityContext:
+      privileged: true
+    tty: true
+    volumeMounts:
+    - mountPath: "/var/run/docker.sock"
+      name: "volume-0"
+      readOnly: false
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - image: "jenkins/inbound-agent:4.6-1-jdk11"
+    name: "jnlp"
+    resources:
+      limits:
+        ephemeral-storage: "2Gi"
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+        ephemeral-storage: "2Gi"
+    volumeMounts:
+    - mountPath: "/var/run/docker.sock"
+      name: "volume-0"
+      readOnly: false
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  restartPolicy: "Never"
+  serviceAccount: "default"
+  volumes:
+  - hostPath:
+      path: "/var/run/docker.sock"
+    name: "volume-0"
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+
