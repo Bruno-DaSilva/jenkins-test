@@ -10,6 +10,17 @@ pipeline {
     buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')
   }
   stages {
+    stage('prep-git-repo') {
+      steps {
+        sh '''
+    set -eu
+    env
+    git config user.email "clearbanc@clearbanc.com" && git config user.name "clearbanc"
+    git remote -v
+    git branch -r
+  '''
+      }
+    }
     stage('Hello') {
       steps {
         sh '''
