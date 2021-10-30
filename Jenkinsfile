@@ -1,3 +1,5 @@
+@Library('code') _
+
 pipeline {
   agent {
     kubernetes {
